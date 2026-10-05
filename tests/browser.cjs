@@ -9,6 +9,12 @@ const puzzles = require('../game.js').puzzles;
 const results = require('./selected-results.json');
 const { key } = require('../storage.js');
 const root = path.resolve(__dirname, '..');
+const accessMode = process.env.ACCESS_LOGGING_MODE || 'success';
+assert.ok(['success', 'failure', 'throw'].includes(accessMode));
+const expectedAccess = {
+  url: 'https://script.google.com/macros/s/AKfycbxssCIHsD-N97SHxNC_GN0ihYeC0qy-lb-EY0KmSs6Gnztaph1sITMerLVEnNWOGkYc/exec?app=knight-tour-puzzle',
+  method: 'GET', mode: 'no-cors', cache: 'no-store', credentials: 'omit', keepalive: true
+};
 const served = new Set(['index.html', 'style.css', 'game.js', 'storage.js', 'app.js']);
 const server = http.createServer((request, response) => {
   const name = request.url.replace(/^\/knight-tour-puzzle\//, '').split('?')[0] || 'index.html';
@@ -24,11 +30,40 @@ const server = http.createServer((request, response) => {
     ...(process.env.BROWSER_EXECUTABLE_PATH ? { executablePath: process.env.BROWSER_EXECUTABLE_PATH } : {}) };
   const errors = [];
   let context;
+  let documentLoads = 0;
+  let networkRequests = 0;
+  const checkAccess = async page => {
+    assert.deepEqual(await page.evaluate(() => window.accessTestCalls), [expectedAccess], 'Exactly one access fetch per document with the required options');
+  };
+  const reload = async page => {
+    await page.reload();
+    documentLoads++;
+    await checkAccess(page);
+  };
   const open = async () => {
     context = await chromium.launchPersistentContext(profile, launch);
+    // Intercept before navigation: tests never write to the production counter.
+    await context.route('https://script.google.com/**', async route => {
+      networkRequests++;
+      assert.equal(route.request().url(), expectedAccess.url);
+      assert.equal(route.request().method(), 'GET');
+      if (accessMode === 'failure') await route.abort('failed');
+      else await route.fulfill({ status: 204, body: '' });
+    });
+    await context.addInitScript(mode => {
+      const originalFetch = window.fetch.bind(window);
+      window.accessTestCalls = [];
+      window.fetch = (url, options) => {
+        window.accessTestCalls.push({ url: String(url), ...options });
+        if (mode === 'throw') throw new Error('Simulated synchronous fetch failure');
+        return originalFetch(url, options);
+      };
+    }, accessMode);
     const page = context.pages()[0];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(url);
+    documentLoads++;
+    await checkAccess(page);
     return page;
   };
   try {
@@ -70,7 +105,7 @@ const server = http.createServer((request, response) => {
         await play(result.nonClosingPath);
         assert.match(await page.locator('#status').textContent(), /戻れません/);
         assert.equal(await page.locator('[data-puzzle="5"]').getAttribute('class'), 'puzzle-choice');
-        await page.reload();
+        await reload(page);
         assert.equal(await page.locator('#count').textContent(), String(puzzle.total));
         assert.match(await page.locator('#status').textContent(), /戻れません/);
         await page.locator('#undo').click();
@@ -95,6 +130,7 @@ const server = http.createServer((request, response) => {
       await page.locator(`[data-cell="${result.solution.at(-1)}"]`).tap();
       if (puzzle.id < 5) { assert.equal(await page.locator('#next').isVisible(), true); await page.locator('#next').click(); }
       else assert.equal(await page.locator('#next').isVisible(), false);
+      await checkAccess(page);
       console.log(`PASS browser Puzzle ${puzzle.id}: full solution, dead end, undo, restart, responsive layout`);
     }
     assert.equal(await page.locator('#all-clear').isVisible(), true);
@@ -119,19 +155,22 @@ const server = http.createServer((request, response) => {
     await choose(5); await page.locator('#restart').click();
     await page.screenshot({ path: path.join(os.tmpdir(), 'knight-puzzle5.png'), fullPage: true });
     await page.evaluate(key => localStorage.setItem(key, '{invalid'), key);
-    await page.reload();
+    await reload(page);
     assert.equal(await page.locator('#puzzle-number').textContent(), 'PUZZLE 01');
     assert.equal(await page.locator('#count').textContent(), '1');
     await page.evaluate(key => localStorage.setItem(key, JSON.stringify({ version: 1, currentId: 5, cleared: [0, 99, '1'], paths: { 5: [4, 4], 2: [5, 0] } })), key);
-    await page.reload();
+    await reload(page);
     assert.equal(await page.locator('#count').textContent(), '1');
     assert.equal(await page.locator('.puzzle-choice.cleared').count(), 0);
     await page.addInitScript(() => Object.defineProperty(window, 'localStorage', { get() { throw new Error('Disabled by browser'); } }));
-    await page.reload();
+    await reload(page);
     assert.match(await page.locator('#save-note').textContent(), /保存できません/);
     await page.locator('.available').first().tap();
     assert.equal(await page.locator('#count').textContent(), '2');
+    await checkAccess(page);
+    assert.equal(networkRequests, accessMode === 'throw' ? 0 : documentLoads, 'Exactly one network request per load, no retries or interaction-triggered requests');
     assert.deepEqual(errors, []);
+    console.log(`PASS access logging (${accessMode}): ${documentLoads} document loads, ${networkRequests} requests; no additional fetch on puzzle changes, undo, restart, or clear`);
     console.log('PASS: next/previous/select, browser close/reopen persistence, corrupted storage, storage disabled, keyboard, static subpath hosting, no JS errors');
     if (baseline) console.log('PASS: Puzzle 1 board positions and dimensions exactly match the original at all 4 widths');
   } finally {
