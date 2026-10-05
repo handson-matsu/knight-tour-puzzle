@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5f0">
+  <meta name="description" content="ナイトを動かして、すべてのマスをめぐる小さなパズル。まずは12マスのウォーミングアップから。">
+  <title>Knight Tour Puzzle</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="game.js" defer></script>
+  <script src="storage.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <header class="brand"><span class="brand-icon" aria-hidden="true">♞</span><span>KNIGHT TOUR <span class="brand-light">PUZZLE</span></span></header>
+    <section class="intro" aria-labelledby="title">
+      <div class="eyebrow">ひとマスずつ、ひと筆の旅。</div>
+      <h1 id="title">すべてのマスを、めぐろう。</h1>
+      <p>縦2・横1、または縦1・横2の「L字」にジャンプ。<br>同じマスを通らずに、すべてのマスをめぐろう。</p>
+    </section>
+    <section class="puzzle" aria-labelledby="puzzle-title">
+      <div class="puzzle-heading"><div><span id="puzzle-number" class="eyebrow">PUZZLE 01</span><h2 id="puzzle-title" tabindex="-1">はじめの一歩</h2></div><span id="puzzle-badge" class="badge">ウォーミングアップ</span></div>
+      <p id="closed-rule" class="closed-rule" hidden><strong>最後に、スタートへ戻れる位置で終わろう。</strong><br>全マスを通り、STARTのマスへナイトの1手で戻れる位置でクリア。実際に戻るタップは不要です。</p>
+      <div class="progress-row"><span>めぐったマス</span><span><strong id="count">1</strong><span id="total" class="total"> / 12</span></span></div>
+      <progress id="progress" value="1" max="12" aria-label="めぐったマス">1 / 12</progress>
+      <div id="board" class="board" role="group" aria-label="3行4列のパズル盤面"></div>
+      <p id="shape-note" class="shape-note" hidden>空いている部分は使わず、マスのある場所だけをめぐります。</p>
+      <div class="legend"><span><i class="dot available-dot"></i>移動できる</span><span><i class="dot visited-dot"></i>通ったマス</span><span>♞ 現在地</span></div>
+      <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true"></div>
+      <div class="controls"><button id="undo" class="button" type="button"><span aria-hidden="true">↶</span> 1手戻る</button><button id="restart" class="button secondary" type="button"><span aria-hidden="true">↻</span> 最初から</button></div>
+      <button id="next" class="button next-button" type="button" hidden>次の問題へ <span aria-hidden="true">→</span></button>
+    </section>
+    <section class="rules" aria-labelledby="rules-title">
+      <div class="rule-diagram" aria-hidden="true"><svg viewBox="0 0 88 88"><defs><pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><rect x="1" y="1" width="26" height="26" rx="5" fill="#e8e9e1"/></pattern></defs><rect width="84" height="84" fill="url(#grid)"/><path d="M14 70V14H42" fill="none" stroke="#53765a" stroke-width="3" stroke-dasharray="4 3"/><path d="m35 8 8 6-8 6" fill="none" stroke="#53765a" stroke-width="3"/><text x="14" y="79" text-anchor="middle" font-size="25" fill="#254c38">♞</text><circle cx="42" cy="14" r="5" fill="#53765a"/></svg></div>
+      <div><h2 id="rules-title">「2マス＋1マス」で、L字に。</h2><p>縦に2マス・横に1マス、または縦に1マス・横に2マス。どの向きにも動けます。</p><p>緑のマスをタップ。通ったマスには戻れません。困ったら「1手戻る」で何度でも。</p></div>
+    </section>
+    <nav class="puzzle-nav" aria-label="問題選択">
+      <div class="nav-heading"><h2>問題を選ぶ <span id="clear-count">0 / 5 クリア</span></h2><button id="previous" class="button secondary" type="button">← 前の問題へ</button></div>
+      <div id="puzzle-selection" class="puzzle-selection"></div>
+      <p id="all-clear" class="all-clear" role="status" hidden>✦ 全5問クリア！ すべての旅をめぐりました。</p>
+      <p id="save-note" class="save-note"></p>
+    </nav>
+    <footer>あせらず、気軽に。自分のペースで。</footer>
+    <noscript>このパズルを遊ぶには、ブラウザーのJavaScriptを有効にしてください。</noscript>
+  </main>
+</body>
+</html>

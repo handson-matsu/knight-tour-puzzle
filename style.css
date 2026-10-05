@@ -1,0 +1,81 @@
+:root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", sans-serif; color: #283e32; background: #f6f5f0; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+button { font: inherit; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.app { width: min(100%, 540px); margin: 0 auto; padding: 26px 20px max(22px, env(safe-area-inset-bottom)); }
+.brand { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 750; letter-spacing: 1.6px; }
+.brand-icon { font-size: 30px; line-height: 1; }
+.brand-light { font-weight: 400; }
+.intro { margin: 34px 0 28px; }
+.eyebrow { font-size: 10px; letter-spacing: 1.6px; color: #65775e; font-weight: 700; }
+h1 { font-size: clamp(21px, 5.5vw, 29px); letter-spacing: -.8px; margin: 10px 0; }
+.intro p { font-size: 12px; color: #6b7369; line-height: 1.8; margin: 0; }
+.puzzle { background: #fffefa; border: 1px solid #e5e7de; border-radius: 22px; padding: 22px; box-shadow: 0 8px 32px #314b3405; }
+.puzzle-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+h2 { font-size: 18px; margin: 6px 0 0; }
+.badge { font-size: 10px; background: #f0f1e8; border-radius: 20px; padding: 7px 10px; white-space: nowrap; color: #61734d; }
+.progress-row { display: flex; justify-content: space-between; align-items: center; margin-top: 23px; font-size: 11px; color: #6c756c; }
+.progress-row strong { color: #34543e; font-size: 20px; font-variant-numeric: tabular-nums; }
+.total { font-size: 12px; }
+progress { display: block; appearance: none; width: 100%; height: 4px; border: 0; border-radius: 4px; overflow: hidden; margin: 9px 0 22px; background: #edf0e7; }
+progress::-webkit-progress-bar { background: #edf0e7; }
+progress::-webkit-progress-value { background: #668765; border-radius: 4px; transition: width .2s; }
+progress::-moz-progress-bar { background: #668765; }
+.board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.cell { position: relative; aspect-ratio: 1; min-width: 0; border: 2px solid transparent; border-radius: 12px; background: #f0f0e9; color: #75806d; display: flex; align-items: center; justify-content: center; font-size: 23px; font-weight: 600; padding: 0; }
+.cell.visited { background: #e6e8dc; }
+.cell.available { background: #e0ecd9; border-color: #8cab78; cursor: pointer; }
+.move-dot { width: 13px; height: 13px; border-radius: 50%; background: #70965c; }
+.cell.current { background: #2c513c; color: #fffaf0; border-color: #2c513c; }
+.knight { font-size: clamp(33px, 10vw, 49px); font-family: Georgia, "Times New Roman", serif; line-height: 1; }
+.visit-number { position: absolute; top: 6px; left: 8px; font-size: 11px; font-weight: 500; color: #dce8d4; }
+.legend { display: flex; justify-content: center; gap: 17px; margin-top: 16px; color: #6c756c; font-size: 10px; }
+.legend > span { display: flex; align-items: center; gap: 5px; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.available-dot { background: #70965c; }
+.visited-dot { background: #ccd1bd; }
+.status { min-height: 81px; display: flex; justify-content: center; flex-direction: column; align-items: center; gap: 6px; text-align: center; margin: 12px 0; border-radius: 12px; }
+.status strong { font-size: 13px; font-weight: 600; }
+.status span { font-size: 11px; color: #71776b; line-height: 1.6; }
+.status.success { background: #e7efde; }
+.status.stuck { background: #faf0dc; color: #735e30; }
+.controls { display: flex; gap: 10px; }
+.button { flex: 1; min-height: 47px; border: 1px solid #d9dfd2; background: #eef1e7; color: #34503b; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.button span { font-size: 19px; vertical-align: -1px; margin-right: 5px; }
+.button.secondary { background: transparent; }
+.button:disabled { opacity: .45; cursor: default; }
+button:focus-visible { outline: 3px solid #b67731; outline-offset: 3px; }
+@media (hover: hover) { .cell.available:hover { background: #ccdfc2; } .button:not(:disabled):hover { background: #e0e7d7; } }
+.rules { display: flex; gap: 17px; align-items: flex-start; margin: 24px 5px 0; }
+.rule-diagram { width: 70px; flex-shrink: 0; padding-top: 3px; }
+.rule-diagram svg { display: block; width: 100%; }
+.rules h2 { font-size: 12px; margin: 0 0 7px; }
+.rules p { font-size: 11px; line-height: 1.85; color: #6a7466; margin: 0 0 5px; }
+footer { font-size: 10px; color: #7c8475; text-align: center; margin-top: 25px; letter-spacing: .8px; }
+@media (max-width: 380px) { .app { padding: 18px 12px; } .intro { margin: 25px 0 20px; } .puzzle { padding: 16px 12px; } .badge { font-size: 9px; padding: 6px 8px; } .board { gap: 5px; } .cell { border-radius: 9px; } .rules { gap: 12px; } }
+@media (prefers-reduced-motion: reduce) { progress::-webkit-progress-value { transition: none; } }
+
+/* Additions are scoped to new controls. Puzzle 01 retains its original layout. */
+[hidden] { display: none !important; }
+.board-gap { aspect-ratio: 1; }
+.shape-note { margin: 12px 0 0; font-size: 10px; line-height: 1.7; color: #6a7466; }
+.closed-rule { margin: 16px 0 0; padding: 12px; border-radius: 10px; background: #f5efdc; color: #695631; font-size: 11px; line-height: 1.8; }
+.closed-rule strong { font-size: 12px; }
+.cell.start-cell { border-color: #a98645; }
+.start-label { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font-size: 8px; letter-spacing: .6px; }
+.start-cell .knight { transform: translateY(-3px); }
+.next-button { display: block; width: 100%; margin-top: 12px; background: #2c513c; color: #fffaf0; border-color: #2c513c; }
+@media (hover: hover) { .next-button:not(:disabled):hover { background: #39664c; } }
+.puzzle-nav { margin-top: 24px; padding-top: 20px; border-top: 1px solid #e0e4d8; }
+.nav-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.nav-heading h2 { font-size: 12px; margin: 0; }
+.nav-heading h2 span { display: block; margin-top: 5px; font-size: 10px; font-weight: 400; color: #6a7466; }
+.nav-heading .button { flex: 0 0 auto; padding: 0 12px; font-size: 11px; }
+.puzzle-selection { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
+.puzzle-choice { min-height: 57px; border: 1px solid #d9dfd2; border-radius: 10px; background: #fffefa; color: #34503b; cursor: pointer; padding: 6px 1px; }
+.puzzle-choice > span { display: block; font-size: 16px; font-weight: 650; }
+.puzzle-choice small { display: block; margin-top: 4px; font-size: 9px; }
+.puzzle-choice.cleared { background: #e7efde; }
+.puzzle-choice[aria-current="true"] { border: 2px solid #2c513c; }
+.save-note { color: #6a7466; font-size: 10px; line-height: 1.8; margin: 12px 0 0; }
+.all-clear { font-size: 12px; line-height: 1.8; padding: 12px; border-radius: 10px; background: #e7efde; text-align: center; }
